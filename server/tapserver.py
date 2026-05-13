@@ -230,7 +230,7 @@ HTML_PAGE = r"""<!DOCTYPE html>
 
   <div id="results"></div>
   <div class="note">
-    数据来源: api.taptapdada.com &nbsp;|&nbsp; 仅供学习研究
+    &copy; 2026 雪球@月旨_投资笔记 &nbsp;|&nbsp; 仅供学习研究
   </div>
 </div>
 
