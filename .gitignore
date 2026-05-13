@@ -1,0 +1,33 @@
+__pycache__/
+*.pyc
+
+# APK artifacts
+apk/extracted/
+apk/jadx_src/
+apk/jadx_res/
+apk/jadx_output/
+apk/*.apk
+apk/*.zip
+
+# Generated output
+crawler/html/
+crawler/output/
+
+# Captured API responses
+captures/
+
+# External tools
+tools/
+
+# Source assets
+src/resources.arsc
+
+# Virtual env
+.venv/
+venv/
+
+# IDE
+.cursor/
+
+# Misc
+*.jsonl
