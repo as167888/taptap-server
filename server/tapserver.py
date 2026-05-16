@@ -19,6 +19,9 @@ import random
 import uuid
 import urllib.parse
 import struct
+import threading
+from datetime import date
+from pathlib import Path
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import requests
 from bs4 import BeautifulSoup
@@ -29,6 +32,59 @@ from tapsearch import (
     build_request, parse_response, build_x_ua, compute_x_tap_sign,
     CLIENT_SECRET, CONFIG
 )
+
+# ============================================================
+# 访客计数器
+# ============================================================
+
+VISITOR_FILE = Path(__file__).resolve().parent / "visitor_count.json"
+_visitor_lock = threading.Lock()
+
+
+def _load_visitor_data():
+    """加载访客数据，返回 {'total': int, 'days': {date_str: set_of_ips}}"""
+    try:
+        if VISITOR_FILE.exists():
+            raw = json.loads(VISITOR_FILE.read_text(encoding="utf-8"))
+            data = {"total": raw.get("total", 0), "days": {}}
+            for d, ips in raw.get("days", {}).items():
+                data["days"][d] = set(ips)
+            return data
+        else:
+            return {"total": 0, "days": {}}
+    except Exception:
+        return {"total": 0, "days": {}}
+
+
+def _save_visitor_data(data):
+    """保存访客数据到 JSON 文件"""
+    serializable = {"total": data["total"], "days": {}}
+    for d, ips in data["days"].items():
+        serializable["days"][d] = sorted(ips)
+    VISITOR_FILE.write_text(json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def record_visit(client_ip):
+    """记录一次访问。同 IP 同一天只计一次。返回 (total, today)"""
+    with _visitor_lock:
+        data = _load_visitor_data()
+        today_str = date.today().isoformat()
+        if today_str not in data["days"]:
+            data["days"][today_str] = set()
+        if client_ip not in data["days"][today_str]:
+            data["days"][today_str].add(client_ip)
+            data["total"] += 1
+            _save_visitor_data(data)
+        return data["total"], len(data["days"][today_str])
+
+
+def get_visitor_counts():
+    """读取当前访客数据，返回 (total, today)"""
+    data = _load_visitor_data()
+    today_str = date.today().isoformat()
+    today_count = len(data["days"].get(today_str, set()))
+    return data["total"], today_count
+
 
 # ============================================================
 # HTML 页面
@@ -201,6 +257,21 @@ HTML_PAGE = r"""<!DOCTYPE html>
     margin-top: 10px;
     padding: 12px;
   }
+  .visitor {
+    text-align: center;
+    margin-top: 8px;
+    padding: 8px 16px;
+    display: inline-block;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .visitor strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
   .spinner {
     display: inline-block;
     width: 20px; height: 20px;
@@ -231,6 +302,9 @@ HTML_PAGE = r"""<!DOCTYPE html>
   <div id="results"></div>
   <div class="note">
     &copy; 2026 雪球@月旨_投资笔记 &nbsp;|&nbsp; 仅供学习研究
+  </div>
+  <div class="visitor" id="visitor-box">
+    访客统计：总计 <strong id="visitor-total">-</strong> 人，今日 <strong id="visitor-today">-</strong> 人
   </div>
 </div>
 
@@ -313,6 +387,15 @@ function escHtml(s) {
   div.textContent = s;
   return div.innerHTML;
 }
+
+// 加载访客数量
+fetch('/api/visitor-count')
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById('visitor-total').textContent = formatNum(d.total);
+    document.getElementById('visitor-today').textContent = formatNum(d.today);
+  })
+  .catch(() => {});
 </script>
 </body>
 </html>"""
@@ -335,6 +418,8 @@ class TapServer(BaseHTTPRequestHandler):
             self._handle_search(urllib.parse.parse_qs(parsed.query))
         elif path == '/api/pc-detail':
             self._handle_pc_detail(urllib.parse.parse_qs(parsed.query))
+        elif path == '/api/visitor-count':
+            self._handle_visitor_count()
         elif path == '/favicon.ico':
             self.send_response(204)
             self.end_headers()
@@ -342,6 +427,9 @@ class TapServer(BaseHTTPRequestHandler):
             self.send_error(404)
 
     def _serve_html(self):
+        # 记录访客
+        client_ip = self.client_address[0] if self.client_address else "127.0.0.1"
+        record_visit(client_ip)
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Cache-Control", "no-cache")
@@ -397,6 +485,15 @@ class TapServer(BaseHTTPRequestHandler):
         except Exception as e:
             resp = {"error": f"查询失败: {e}"}
 
+        self.wfile.write(json.dumps(resp, ensure_ascii=False).encode('utf-8'))
+
+    def _handle_visitor_count(self):
+        total, today = get_visitor_counts()
+        resp = {"total": total, "today": today}
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
         self.wfile.write(json.dumps(resp, ensure_ascii=False).encode('utf-8'))
 
     def log_message(self, format, *args):
