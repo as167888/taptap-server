@@ -8,8 +8,11 @@ TapTap PC 游戏全量爬虫 (数据库版)
   - games 表: 以 app_id 为主键，记录详情页链接、名称、各阶段爬取数据
 
 用法:
-  python crawl_pc_games.py    # 交互式菜单
-  python crawl_pc_games.py --auto   # 全量自动运行 (非交互)
+  python crawl_pc_games.py              # 交互式菜单
+  python crawl_pc_games.py --auto        # 全量自动运行 (非交互)
+  python crawl_pc_games.py --auto --publish  # 全量运行 + 自动发布到 GitHub Pages
+  python crawl_pc_games.py --stage 6 --publish  # 仅重新生成 HTML 并发布
+  python crawl_pc_games.py --stage 6 --no-filter  # 生成 HTML 不过滤无效数据
 """
 
 import os
@@ -382,6 +385,59 @@ def query_all_mobile_downloads():
         conn.close()
         time.sleep(random.uniform(0.5, 1.5))
 
+    retry_zero_mobile_downloads()
+
+
+def retry_zero_mobile_downloads():
+    """对于总下载量>1000且移动端下载量=0的游戏，重新查询移动端下载量，最多3次。"""
+    conn = init_db()
+    cur = conn.execute(
+        """SELECT app_id, game_name, total_downloads, mobile_downloads
+           FROM games WHERE status IN ('mobile_queried', 'complete')"""
+    )
+    candidates = []
+    for row in cur.fetchall():
+        app_id, name, total_str, mobile_str = row
+        try:
+            total_dl = int(str(total_str).replace(",", "").replace(" ", ""))
+        except (ValueError, TypeError):
+            continue
+        try:
+            mobile_dl = int(str(mobile_str).replace(",", "").replace(" ", ""))
+        except (ValueError, TypeError):
+            mobile_dl = 0
+        if total_dl > 1000 and mobile_dl == 0:
+            candidates.append((app_id, name, total_dl))
+    conn.close()
+
+    if not candidates:
+        print("  没有需要重试的游戏（总下载量>1000且移动端下载量=0）。")
+        return
+
+    total = len(candidates)
+    print(f"\n  发现 {total} 款游戏总下载量>1000但移动端下载量为0，开始重试...")
+
+    for i, (app_id, name, total_dl) in enumerate(candidates, 1):
+        print(f"  [{i:>4}/{total}] 重试: {name} (总下载量: {total_dl:,})")
+        success = False
+        for attempt in range(1, 4):
+            print(f"    第 {attempt}/3 次尝试...")
+            hits = query_mobile_downloads(name)
+            print(f"    hits_total: {hits:,}")
+            if hits > 0:
+                conn = init_db()
+                pc = total_dl - hits
+                db_update_mobile(conn, app_id, hits, pc)
+                conn.close()
+                print(f"    [OK] 第 {attempt} 次成功！移动端: {hits:,}, PC端: {pc:,}")
+                success = True
+                break
+            if attempt < 3:
+                time.sleep(random.uniform(1.0, 2.0))
+        if not success:
+            print(f"    [放弃] 3次尝试移动端下载量均为0")
+        time.sleep(random.uniform(0.5, 1.5))
+
 
 # ============================================================
 # 步骤 5 & 6: 导出 Excel + HTML
@@ -426,7 +482,7 @@ def export_excel():
     return str(filepath)
 
 
-def export_html(excel_path=None):
+def export_html(excel_path=None, filter_bad_data=True):
     """从 Excel 生成可排序 HTML 网页。"""
     if excel_path is None:
         excels = sorted(OUTPUT_DIR.glob("*_taptap_pc_games.xlsx"))
@@ -444,6 +500,42 @@ def export_html(excel_path=None):
     page_title = f"TapTap平台PC端游戏下载量明细表（数据截至{today_str}）"
 
     df = pd.read_excel(excel_path)
+
+    if filter_bad_data:
+        before = len(df)
+
+        # 剔除游戏名称爬取失败的行
+        df = df[df["游戏名称"].apply(lambda x: str(x).strip() != "获取失败")]
+
+        # 剔除 PC端下载量 <= 0 或无效的行
+        def _pc_valid(val):
+            if pd.isna(val):
+                return False
+            s = str(val).strip()
+            if s in ("N/A", "获取失败", "", "0", "0.0"):
+                return False
+            try:
+                return float(s.replace(",", "").replace(" ", "")) > 0
+            except (ValueError, TypeError):
+                return False
+
+        df = df[df["PC端下载量"].apply(_pc_valid)]
+
+        after = len(df)
+        removed = before - after
+        if removed > 0:
+            print(f"  过滤无效数据: {before} -> {after} 行 (移除 {removed} 行)")
+
+    # 按 PC端下载量从大到小排列
+    def _pc_sort_val(val):
+        s = str(val).strip().replace(",", "").replace(" ", "")
+        try:
+            return float(s)
+        except (ValueError, TypeError):
+            return 0.0
+
+    df["_pc_sort"] = df["PC端下载量"].apply(_pc_sort_val)
+    df = df.sort_values("_pc_sort", ascending=False).drop(columns=["_pc_sort"])
 
     if "详情页链接" in df.columns:
         df["详情页链接"] = df["详情页链接"].apply(
@@ -514,6 +606,84 @@ def export_html(excel_path=None):
     output_path.write_text(html, encoding="utf-8")
     print(f"  已生成: {output_path}")
     return str(output_path)
+
+
+# ============================================================
+# GitHub Pages 发布
+# ============================================================
+
+def git_publish(commit_msg=None):
+    """将最新 HTML 复制到 docs/index.html 并推送至 GitHub。"""
+    import shutil
+    import subprocess
+
+    html_files = sorted(OUTPUT_DIR.glob("*_pc_game_ranking.html"))
+    if not html_files:
+        print("  [发布] 未找到 HTML 文件，跳过发布。")
+        return False
+
+    latest = html_files[-1]
+    project_root = Path(__file__).parent.parent
+    docs_dir = project_root / "docs"
+
+    docs_dir.mkdir(parents=True, exist_ok=True)
+    index_html = docs_dir / "index.html"
+    shutil.copy2(str(latest), str(index_html))
+    print(f"  [发布] 已复制到 {index_html}")
+
+    try:
+        subprocess.run(
+            ["git", "--version"],
+            capture_output=True, check=True,
+            cwd=str(project_root), timeout=15,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        print("  [发布] Git 不可用，跳过提交推送。")
+        return False
+
+    result = subprocess.run(
+        ["git", "status", "--porcelain", "--", "docs/"],
+        capture_output=True, text=True,
+        cwd=str(project_root), timeout=30,
+    )
+    if not result.stdout.strip():
+        print("  [发布] docs/ 无变化，跳过提交。")
+        return True
+
+    try:
+        subprocess.run(
+            ["git", "add", "docs/"],
+            check=True, capture_output=True,
+            cwd=str(project_root), timeout=30,
+        )
+
+        msg = commit_msg or (
+            f"Auto-update PC game ranking - "
+            f"{datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        )
+        subprocess.run(
+            ["git", "commit", "-m", msg],
+            check=True, capture_output=True,
+            cwd=str(project_root), timeout=30,
+        )
+
+        subprocess.run(
+            ["git", "push"],
+            check=True, capture_output=True,
+            cwd=str(project_root), timeout=120,
+        )
+        print(f"  [发布] 已推送至 GitHub，Pages 将在数分钟内更新。")
+        return True
+
+    except subprocess.CalledProcessError as e:
+        stderr = e.stderr
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode("utf-8", errors="replace")
+        print(f"  [发布] Git 操作失败: {stderr[:200]}")
+        return False
+    except Exception as e:
+        print(f"  [发布] 未知错误: {e}")
+        return False
 
 
 # ============================================================
@@ -656,6 +826,7 @@ def print_full_screen():
 
     # ============================================================
     sec("【其他】")
+    item("[A] 手动录入游戏     - 手动添加游戏名称和详情页链接")
     item("[V] 查看数据库       - 分页浏览已收录游戏")
     item("[Q] 退出程序")
 
@@ -727,22 +898,55 @@ def run_stage_5():
         print(f"\n  Excel 已导出到：{path}\n")
 
 
-def run_stage_6():
+def run_stage_6(filter_bad_data=True):
     print()
     print("  " + "=" * 60)
     print("  阶段 6：生成可视化网页")
     print("  " + "=" * 60)
-    export_html()
+    export_html(filter_bad_data=filter_bad_data)
     print()
 
 
-def run_full_pipeline():
+def manual_add_game():
+    """手动录入游戏名称和链接到数据库。"""
+    print()
+    print("  " + "=" * 60)
+    print("  手动录入游戏")
+    print("  " + "=" * 60)
+
+    name = input("  请输入游戏名称: ").strip()
+    if not name:
+        print("  名称不能为空，已取消。")
+        return
+
+    url = input("  请输入详情页链接 (如 https://www.taptap.cn/app/123456): ").strip()
+    if not url:
+        print("  链接不能为空，已取消。")
+        return
+
+    app_id = extract_app_id_from_url(url)
+    if not app_id:
+        print(f"  错误: 无法从链接中提取 app_id，请检查链接格式。")
+        print(f"  期望格式: https://www.taptap.cn/app/<数字>")
+        return
+
+    conn = init_db()
+    is_new = db_upsert_game(conn, app_id, url, name)
+    conn.close()
+
+    if is_new:
+        print(f"  [OK] 已录入: app_id={app_id}, 名称={name}")
+    else:
+        print(f"  [提示] app_id={app_id} 已存在，未重复添加。")
+
+
+def run_full_pipeline(filter_bad_data=True):
     run_stage_1()
     run_stage_2()
     run_stage_3()
     run_stage_4()
     run_stage_5()
-    run_stage_6()
+    run_stage_6(filter_bad_data=filter_bad_data)
     show_db_status()
     print("  全流程执行完毕！\n")
 
@@ -774,6 +978,8 @@ def interactive_loop():
             run_stage_6()
         elif choice == "7":
             run_full_pipeline()
+        elif choice == "A":
+            manual_add_game()
         elif choice == "Q":
             print("\n  再见！\n")
             break
@@ -803,6 +1009,18 @@ def main():
         "--stage", type=int, choices=[1, 2, 3, 4, 5, 6],
         help="仅运行指定阶段",
     )
+    parser.add_argument(
+        "--publish", action="store_true",
+        help="生成 HTML 后自动提交并推送至 GitHub Pages",
+    )
+    parser.add_argument(
+        "--no-filter", action="store_true",
+        help="生成 HTML 时不过滤无效数据",
+    )
+    parser.add_argument(
+        "--commit-msg", type=str, default=None,
+        help="自定义 Git 提交信息（仅在 --publish 时生效）",
+    )
     args = parser.parse_args()
 
     stage_funcs = {
@@ -811,9 +1029,16 @@ def main():
     }
 
     if args.stage:
-        stage_funcs[args.stage]()
+        if args.stage == 6:
+            run_stage_6(filter_bad_data=not args.no_filter)
+        else:
+            stage_funcs[args.stage]()
+        if args.stage == 6 and args.publish:
+            git_publish(args.commit_msg)
     elif args.auto:
-        run_full_pipeline()
+        run_full_pipeline(filter_bad_data=not args.no_filter)
+        if args.publish:
+            git_publish(args.commit_msg)
     else:
         interactive_loop()
 
