@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>搜索页广告分析：搜索框数据包.txt</title>
+<style>
+ body { font-family:'Microsoft YaHei',sans-serif; background:#f0f2f5; margin:0; padding:26px 14px; }
+ h1 { text-align:center; font-size:23px; margin:0 0 6px; }
+ .sub { text-align:center; color:#666; font-size:.86em; margin-bottom:18px; }
+ .cards { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; max-width:1300px; margin:0 auto 18px; }
+ .kpi { background:#fff; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,.06); padding:12px 20px; text-align:center; min-width:120px; }
+ .kpi b { display:block; font-size:25px; color:#2f3542; }
+ .kpi span { font-size:12px; color:#888; }
+ h2 { max-width:1300px; margin:26px auto 8px; font-size:17px; color:#2f3542;
+       border-left:5px solid #00a8ff; padding-left:10px; }
+ h2 .meta { color:#999; font-size:12.5px; font-weight:normal; margin-left:8px; }
+ .wrap { background:#fff; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,.06);
+          max-width:1300px; margin:0 auto 10px; padding:10px; overflow-x:auto; }
+ table { border-collapse:collapse; width:100%; font-size:12.5px; }
+ th { background:#2f3542; color:#fff; padding:8px 7px; white-space:nowrap; }
+ td { padding:6px 7px; border-bottom:1px solid #ececec; text-align:center; }
+ tr:nth-child(even) td { background:#fafbfc; }
+ tr.p-ad td { background:#fff4e5 !important; }
+ tr.p-unl td { background:#f3e8ff !important; }
+ tr.p-badge td { background:#f2f8ff !important; }
+ .pill { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11.5px; white-space:nowrap; }
+ .p-ad { background:#ffe8cc; color:#b95c00; }
+ .p-unl { background:#f0e3ff; color:#7a3cb5; }
+ .p-badge { background:#e3f0ff; color:#1f6fa8; }
+ .p-ok { background:#e8f6e8; color:#2e7d32; }
+ .p-ops { background:#eef1f5; color:#5a6675; }
+ td.sig { font-size:11.5px; color:#8a5a00; text-align:left; max-width:230px; }
+ .exp details summary { cursor:pointer; color:#00a8ff; white-space:nowrap; }
+ .btn { cursor:pointer; border:1px solid #d5dbe3; background:#f7f9fc; color:#2f3542;
+         border-radius:6px; padding:3px 9px; font-size:12px; white-space:nowrap; }
+ .btn:hover { background:#e9f3ff; border-color:#9fcaf5; }
+ tr.drow > td { background:#fbfcfe !important; padding:10px 14px 14px; text-align:left; }
+ .tree { max-height:460px; overflow:auto; }
+ .tree .indent { margin-left:14px; border-left:2px solid #e8ecf2; padding-left:10px; }
+ .tree .leaf { display:flex; align-items:flex-start; gap:10px; padding:2px 0; border-bottom:1px dashed #f2f4f7; }
+ .tree .leaf .k { flex:0 0 250px; max-width:250px; color:#57606f;
+                   font-family:Consolas,monospace; font-size:12px; word-break:break-all; }
+ .tree .leaf .v { flex:1 1 auto; min-width:0; word-break:break-all; font-size:12.5px; }
+ .tree summary { cursor:pointer; color:#3c4858; font-size:12.5px; padding:2px 0; }
+ .tree .cnt { color:#aaa; font-size:11px; }
+ .legend { background:#fff; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,.06);
+            max-width:1300px; margin:0 auto 16px; padding:12px 18px; font-size:13px; color:#555; line-height:1.9; }
+</style></head><body>
+<h1>TapTap 搜索页广告分析</h1>
+<div class="sub">文件：captures/test/搜索框数据包.txt ｜ 服务端时间：2026-09-16 22:18:29</div>
+
+<div class="cards">
+ <div class="kpi"><b>56</b><span>总条目</span></div>
+ <div class="kpi"><b>8</b><span>带标志广告</span></div>
+ <div class="kpi"><b>3</b><span>未标注广告</span></div>
+ <div class="kpi"><b>11</b><span>付费推广合计</span></div>
+ <div class="kpi"><b>19.6%</b><span>广告占比</span></div>
+</div>
+
+<div class="legend">
+ <b>色标</b>：<span class="pill p-ad">橙</span> property=ad 带广告标志 ·
+ <span class="pill p-unl">紫</span> property 为空但含 plan_id/flow_cpm（未标注付费推广） ·
+ <span class="pill p-badge">蓝</span> 自然但带小角标（如"首发"） ·
+ <span class="pill p-ops">灰</span> 平台运营内容（app_id=0，无竞价线索） · 无底色 = 纯自然<br>
+ <b>判定字段（按可靠度排序）</b>：
+ <code>property="ad"</code> → 带标志广告；
+ <code>item_id</code> 以 <code>0-0</code> 开头 → 付费推广（比 property 更全，可抓出未标注的）；
+ <code>via</code> 含 <code>plan_id</code>/<code>flow_cpm</code> → 未标注广告；
+ <code>icon_type</code> 0=无角标 2=小图标角标(素材205×90) 4=广告角标(素材72×72)；
+ <code>icon_title</code> 文字标识（本包 8 条广告中 2 条缺失）；<code>trend_icon_type</code> 热度趋势角标（搜索页独有）
+</div>
+
+<h2>搜索发现 <span class="meta">discovery · 20 条</span></h2>
+<div class="wrap"><table>
+ <thead><tr>
+  <th>#</th><th>关键词</th><th>展示词</th><th>内容性质</th><th>付费线索</th><th>item_id</th>
+  <th>角标</th><th>角标文字</th><th>趋势角标</th>
+  <th>app_id</th><th>plan_id</th><th>flow_cpm</th><th>pctr</th><th>track_id</th><th>图标</th><th>原始</th>
+ </tr></thead><tbody>
+<tr class="p-ok">
+  <td>1</td>
+  <td style="text-align:left"><b>镇邪人</b></td>
+  <td style="text-align:left">镇邪人</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>11417208-11427565-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>862472</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(1,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d1" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">镇邪人</span></div><div class="leaf"><span class="k">display_word</span><span class="v">镇邪人</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">862472</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">11417208-11427565-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-badge">
+  <td>2</td>
+  <td style="text-align:left"><b>勇士之心</b></td>
+  <td style="text-align:left">勇士之心</td>
+  <td><span class="pill p-badge">自然（带小角标）</span></td>
+  <td class="sig">—</td>
+  <td>1658567-1649447-</td>
+  <td>小图标角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>844803</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(2,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d2" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{7}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">勇士之心</span></div><div class="leaf"><span class="k">display_word</span><span class="v">勇士之心</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">2</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">205</span></div><div class="leaf"><span class="k">height</span><span class="v">90</span></div><div class="leaf"><span class="k">color</span><span class="v">0x36747b</span></div><div class="leaf"><span class="k">original_size</span><span class="v">1710</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">844803</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">1658567-1649447-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>3</td>
+  <td style="text-align:left"><b>永恒之塔</b></td>
+  <td style="text-align:left">永恒之塔</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>241162-155058-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>830301</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(3,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d3" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">永恒之塔</span></div><div class="leaf"><span class="k">display_word</span><span class="v">永恒之塔</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">830301</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">241162-155058-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ad">
+  <td>4</td>
+  <td style="text-align:left"><b>心动小镇</b></td>
+  <td style="text-align:left">心动小镇 8.6分</td>
+  <td><span class="pill p-ad">广告（property=ad）</span></td>
+  <td class="sig">property=ad + ad_id + item_id=0-0 + icon_type=4</td>
+  <td>0-0-</td>
+  <td>广告角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>45213</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>CYlMg7vY0GUbVf</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(4,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d4" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{9}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v">ad</span></div><div class="leaf"><span class="k">ad_id</span><span class="v">45213;CYlMg7vY0GUbVfDedmwvIlh9D4E</span></div><div class="leaf"><span class="k">keyword</span><span class="v">心动小镇</span></div><div class="leaf"><span class="k">display_word</span><span class="v">心动小镇 8.6分</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">4</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">72</span></div><div class="leaf"><span class="k">height</span><span class="v">72</span></div><div class="leaf"><span class="k">color</span><span class="v">0x996036</span></div><div class="leaf"><span class="k">original_size</span><span class="v">3523</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{2}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">trackid</span><span class="v">CYlMg7vY0GUbVfDedmwvIlh9D4E</span></div><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">45213</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">0-0-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">CYlMg7vY0GUbVfDedmwvIlh9D4E</span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">45213;CYlMg7vY0GUbVfDedmwvIlh9D4E</span></div></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>5</td>
+  <td style="text-align:left"><b>仕途人生</b></td>
+  <td style="text-align:left">仕途人生</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>22356844-22234749-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>929313</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(5,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d5" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">仕途人生</span></div><div class="leaf"><span class="k">display_word</span><span class="v">仕途人生</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">929313</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">22356844-22234749-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-unl">
+  <td>6</td>
+  <td style="text-align:left"><b>伊莫PC版下载已开放</b></td>
+  <td style="text-align:left">-</td>
+  <td><span class="pill p-unl">未标注广告（item_id=0-0 + plan_id/flow_cpm）</span></td>
+  <td class="sig">plan_id=20907 + flow_cpm=7.2136 + item_id=0-0-&lt;plan&gt;</td>
+  <td>0-0-20907</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>0</td>
+  <td>20907</td>
+  <td>7.21368</td>
+  <td>0.029879</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(6,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d6" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{5}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">伊莫PC版下载已开放</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">0</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">0-0-20907</span></div><div class="leaf"><span class="k">plan_id</span><span class="v">20907</span></div><div class="leaf"><span class="k">flow_cpm</span><span class="v">7.213684329346156</span></div><div class="leaf"><span class="k">pctr</span><span class="v">0.02987929042428732</span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ad">
+  <td>7</td>
+  <td style="text-align:left"><b>率土之滨</b></td>
+  <td style="text-align:left">率土之滨</td>
+  <td><span class="pill p-ad">广告（property=ad）</span></td>
+  <td class="sig">property=ad + ad_id + item_id=0-0 + icon_type=4</td>
+  <td>0-0-</td>
+  <td>广告角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>4682</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>VW5oT7BUe-VMLA</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(7,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d7" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{9}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v">ad</span></div><div class="leaf"><span class="k">ad_id</span><span class="v">4682;VW5oT7BUe-VMLAr8IuMSEW4jORC</span></div><div class="leaf"><span class="k">keyword</span><span class="v">率土之滨</span></div><div class="leaf"><span class="k">display_word</span><span class="v">率土之滨</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">4</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">72</span></div><div class="leaf"><span class="k">height</span><span class="v">72</span></div><div class="leaf"><span class="k">color</span><span class="v">0x996036</span></div><div class="leaf"><span class="k">original_size</span><span class="v">3523</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{2}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">trackid</span><span class="v">VW5oT7BUe-VMLAr8IuMSEW4jORC</span></div><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">4682</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">0-0-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">VW5oT7BUe-VMLAr8IuMSEW4jORC</span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">4682;VW5oT7BUe-VMLAr8IuMSEW4jORC</span></div></div></details></div></td>
+</tr>
+<tr class="p-badge">
+  <td>8</td>
+  <td style="text-align:left"><b>正中靶心2</b></td>
+  <td style="text-align:left">正中靶心2</td>
+  <td><span class="pill p-badge">自然（带小角标）</span></td>
+  <td class="sig">—</td>
+  <td>18178703-18059606-</td>
+  <td>小图标角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>822532</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(8,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d8" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{7}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">正中靶心2</span></div><div class="leaf"><span class="k">display_word</span><span class="v">正中靶心2</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">2</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">205</span></div><div class="leaf"><span class="k">height</span><span class="v">90</span></div><div class="leaf"><span class="k">color</span><span class="v">0x36747b</span></div><div class="leaf"><span class="k">original_size</span><span class="v">1710</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">822532</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">18178703-18059606-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-badge">
+  <td>9</td>
+  <td style="text-align:left"><b>青云仕途</b></td>
+  <td style="text-align:left">青云仕途</td>
+  <td><span class="pill p-badge">自然（带小角标）</span></td>
+  <td class="sig">—</td>
+  <td>24307896-24186518-</td>
+  <td>小图标角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>930546</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(9,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d9" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{7}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">青云仕途</span></div><div class="leaf"><span class="k">display_word</span><span class="v">青云仕途</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">2</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">205</span></div><div class="leaf"><span class="k">height</span><span class="v">90</span></div><div class="leaf"><span class="k">color</span><span class="v">0x36747b</span></div><div class="leaf"><span class="k">original_size</span><span class="v">1710</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">930546</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24307896-24186518-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>10</td>
+  <td style="text-align:left"><b>云伊莫</b></td>
+  <td style="text-align:left">云伊莫</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>13242718-13116766-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>936496</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(10,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d10" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">云伊莫</span></div><div class="leaf"><span class="k">display_word</span><span class="v">云伊莫</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">936496</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">13242718-13116766-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-badge">
+  <td>11</td>
+  <td style="text-align:left"><b>燃烧纪元</b></td>
+  <td style="text-align:left">燃烧纪元</td>
+  <td><span class="pill p-badge">自然（带小角标）</span></td>
+  <td class="sig">—</td>
+  <td>11816049-11827271-</td>
+  <td>小图标角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>762269</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(11,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d11" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{7}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">燃烧纪元</span></div><div class="leaf"><span class="k">display_word</span><span class="v">燃烧纪元</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">2</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">205</span></div><div class="leaf"><span class="k">height</span><span class="v">90</span></div><div class="leaf"><span class="k">color</span><span class="v">0x36747b</span></div><div class="leaf"><span class="k">original_size</span><span class="v">1710</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">762269</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">11816049-11827271-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-unl">
+  <td>12</td>
+  <td style="text-align:left"><b>原神免费送五星自选</b></td>
+  <td style="text-align:left">-</td>
+  <td><span class="pill p-unl">未标注广告（item_id=0-0 + plan_id/flow_cpm）</span></td>
+  <td class="sig">plan_id=20682 + flow_cpm=7.2136 + item_id=0-0-&lt;plan&gt;</td>
+  <td>0-0-20682</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>0</td>
+  <td>20682</td>
+  <td>7.21368</td>
+  <td>0.029879</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(12,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d12" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{5}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">原神免费送五星自选</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">0</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">0-0-20682</span></div><div class="leaf"><span class="k">plan_id</span><span class="v">20682</span></div><div class="leaf"><span class="k">flow_cpm</span><span class="v">7.213684329346156</span></div><div class="leaf"><span class="k">pctr</span><span class="v">0.02987929042428732</span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>13</td>
+  <td style="text-align:left"><b>古龙群侠录</b></td>
+  <td style="text-align:left">古龙群侠录</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>12050782-12039485-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>774665</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(13,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d13" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">古龙群侠录</span></div><div class="leaf"><span class="k">display_word</span><span class="v">古龙群侠录</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">774665</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">12050782-12039485-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>14</td>
+  <td style="text-align:left"><b>机战：钢铁巨舰</b></td>
+  <td style="text-align:left">机战：钢铁巨舰</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>23789115-23656735-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>922013</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(14,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d14" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">机战：钢铁巨舰</span></div><div class="leaf"><span class="k">display_word</span><span class="v">机战：钢铁巨舰</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">922013</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">23789115-23656735-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-badge">
+  <td>15</td>
+  <td style="text-align:left"><b>咒语旅途3</b></td>
+  <td style="text-align:left">咒语旅途3</td>
+  <td><span class="pill p-badge">自然（带小角标）</span></td>
+  <td class="sig">—</td>
+  <td>24126034-23993165-</td>
+  <td>小图标角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>931384</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(15,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d15" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{7}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">咒语旅途3</span></div><div class="leaf"><span class="k">display_word</span><span class="v">咒语旅途3</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">2</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">205</span></div><div class="leaf"><span class="k">height</span><span class="v">90</span></div><div class="leaf"><span class="k">color</span><span class="v">0x36747b</span></div><div class="leaf"><span class="k">original_size</span><span class="v">1710</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">931384</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24126034-23993165-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-unl">
+  <td>16</td>
+  <td style="text-align:left"><b>聚光灯</b></td>
+  <td style="text-align:left">GameJam 游戏</td>
+  <td><span class="pill p-unl">未标注广告（item_id=0-0 + plan_id/flow_cpm）</span></td>
+  <td class="sig">plan_id=19551 + flow_cpm=7.2136 + item_id=0-0-&lt;plan&gt;</td>
+  <td>0-0-19551</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>0</td>
+  <td>19551</td>
+  <td>7.21368</td>
+  <td>0.029879</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(16,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d16" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">聚光灯</span></div><div class="leaf"><span class="k">display_word</span><span class="v">GameJam 游戏</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">0</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">0-0-19551</span></div><div class="leaf"><span class="k">plan_id</span><span class="v">19551</span></div><div class="leaf"><span class="k">flow_cpm</span><span class="v">7.213684329346156</span></div><div class="leaf"><span class="k">pctr</span><span class="v">0.02987929042428732</span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>17</td>
+  <td style="text-align:left"><b>高三最后300天</b></td>
+  <td style="text-align:left">高三最后300天</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>22932942-22819277-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>892953</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(17,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d17" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">高三最后300天</span></div><div class="leaf"><span class="k">display_word</span><span class="v">高三最后300天</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">892953</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">22932942-22819277-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>18</td>
+  <td style="text-align:left"><b>永恒之塔：经典</b></td>
+  <td style="text-align:left">永恒之塔：经典</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>21253497-21141200-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>830301</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(18,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d18" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">永恒之塔：经典</span></div><div class="leaf"><span class="k">display_word</span><span class="v">永恒之塔：经典</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">830301</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">21253497-21141200-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>19</td>
+  <td style="text-align:left"><b>军旅</b></td>
+  <td style="text-align:left">军旅</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>1370802-1371094-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>921865</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(19,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d19" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">军旅</span></div><div class="leaf"><span class="k">display_word</span><span class="v">军旅</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">921865</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">1370802-1371094-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>20</td>
+  <td style="text-align:left"><b>永夜起源</b></td>
+  <td style="text-align:left">永夜起源</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>22961899-22839857-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>889889</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(20,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d20" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">永夜起源</span></div><div class="leaf"><span class="k">display_word</span><span class="v">永夜起源</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">discovery</span></div><div class="leaf"><span class="k">app_id</span><span class="v">889889</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">item_id</span><span class="v">22961899-22839857-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr></tbody>
+</table></div>
+<h2>热搜 <span class="meta">hot · 23 条</span></h2>
+<div class="wrap"><table>
+ <thead><tr>
+  <th>#</th><th>关键词</th><th>展示词</th><th>内容性质</th><th>付费线索</th><th>item_id</th>
+  <th>角标</th><th>角标文字</th><th>趋势角标</th>
+  <th>app_id</th><th>plan_id</th><th>flow_cpm</th><th>pctr</th><th>track_id</th><th>图标</th><th>原始</th>
+ </tr></thead><tbody>
+<tr class="p-ok">
+  <td>1</td>
+  <td style="text-align:left"><b>伊莫</b></td>
+  <td style="text-align:left">伊莫</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>12867965-12736574-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>748031</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(21,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d21" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">伊莫</span></div><div class="leaf"><span class="k">display_word</span><span class="v">伊莫</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">748031</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">12867965-12736574-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ad">
+  <td>2</td>
+  <td style="text-align:left"><b>梦幻西游</b></td>
+  <td style="text-align:left">梦幻西游</td>
+  <td><span class="pill p-ad">广告（property=ad）</span></td>
+  <td class="sig">property=ad + ad_id + item_id=0-0 + icon_type=4</td>
+  <td>0-0-</td>
+  <td>广告角标</td>
+  <td>广告</td>
+  <td>-</td>
+  <td>2315</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>0BHgpjErnSpyP9</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(22,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d22" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v">ad</span></div><div class="leaf"><span class="k">ad_id</span><span class="v">2315;0BHgpjErnSpyP9HZ6s64YydDb1Z</span></div><div class="leaf"><span class="k">keyword</span><span class="v">梦幻西游</span></div><div class="leaf"><span class="k">display_word</span><span class="v">梦幻西游</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">4</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">72</span></div><div class="leaf"><span class="k">height</span><span class="v">72</span></div><div class="leaf"><span class="k">color</span><span class="v">0x996036</span></div><div class="leaf"><span class="k">original_size</span><span class="v">3523</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{2}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">trackid</span><span class="v">0BHgpjErnSpyP9HZ6s64YydDb1Z</span></div><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">2315</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">0-0-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">0BHgpjErnSpyP9HZ6s64YydDb1Z</span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">2315;0BHgpjErnSpyP9HZ6s64YydDb1Z</span></div><div class="leaf"><span class="k">icon_title</span><span class="v">广告</span></div></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>3</td>
+  <td style="text-align:left"><b>三角洲行动</b></td>
+  <td style="text-align:left">三角洲行动</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>5160482-5166511-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>330259</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(23,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d23" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">三角洲行动</span></div><div class="leaf"><span class="k">display_word</span><span class="v">三角洲行动</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">330259</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">5160482-5166511-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>4</td>
+  <td style="text-align:left"><b>我的世界：移动版</b></td>
+  <td style="text-align:left">我的世界：移动版</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>9079443-9085454-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>43639</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(24,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d24" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">我的世界：移动版</span></div><div class="leaf"><span class="k">display_word</span><span class="v">我的世界：移动版</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">43639</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">9079443-9085454-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ad">
+  <td>5</td>
+  <td style="text-align:left"><b>镇邪人</b></td>
+  <td style="text-align:left">镇邪人</td>
+  <td><span class="pill p-ad">广告（property=ad）</span></td>
+  <td class="sig">property=ad + ad_id + item_id=0-0 + icon_type=4</td>
+  <td>0-0-</td>
+  <td>广告角标</td>
+  <td>广告</td>
+  <td>-</td>
+  <td>862472</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>4q6mJGl82bcZpb</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(25,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d25" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v">ad</span></div><div class="leaf"><span class="k">ad_id</span><span class="v">862472;4q6mJGl82bcZpbggCZNAoIwC-GJ</span></div><div class="leaf"><span class="k">keyword</span><span class="v">镇邪人</span></div><div class="leaf"><span class="k">display_word</span><span class="v">镇邪人</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">4</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">72</span></div><div class="leaf"><span class="k">height</span><span class="v">72</span></div><div class="leaf"><span class="k">color</span><span class="v">0x996036</span></div><div class="leaf"><span class="k">original_size</span><span class="v">3523</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{2}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">trackid</span><span class="v">4q6mJGl82bcZpbggCZNAoIwC-GJ</span></div><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">862472</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">0-0-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">4q6mJGl82bcZpbggCZNAoIwC-GJ</span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">862472;4q6mJGl82bcZpbggCZNAoIwC-GJ</span></div><div class="leaf"><span class="k">icon_title</span><span class="v">广告</span></div></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>6</td>
+  <td style="text-align:left"><b>王者荣耀</b></td>
+  <td style="text-align:left">王者荣耀</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>15793-93862-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>2301</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(26,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d26" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">王者荣耀</span></div><div class="leaf"><span class="k">display_word</span><span class="v">王者荣耀</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">2301</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">15793-93862-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>7</td>
+  <td style="text-align:left"><b>原神</b></td>
+  <td style="text-align:left">原神</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>2146-298344-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>168332</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(27,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d27" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">原神</span></div><div class="leaf"><span class="k">display_word</span><span class="v">原神</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">168332</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">2146-298344-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>8</td>
+  <td style="text-align:left"><b>蓝色星原：旅谣</b></td>
+  <td style="text-align:left">蓝色星原：旅谣</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>7426598-7432918-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>593829</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(28,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d28" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">蓝色星原：旅谣</span></div><div class="leaf"><span class="k">display_word</span><span class="v">蓝色星原：旅谣</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">593829</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">7426598-7432918-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>9</td>
+  <td style="text-align:left"><b>蛋仔派对</b></td>
+  <td style="text-align:left">蛋仔派对</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>7504-101089-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>206776</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(29,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d29" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">蛋仔派对</span></div><div class="leaf"><span class="k">display_word</span><span class="v">蛋仔派对</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">206776</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">7504-101089-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ad">
+  <td>10</td>
+  <td style="text-align:left"><b>燕云十六声</b></td>
+  <td style="text-align:left">燕云十六声</td>
+  <td><span class="pill p-ad">广告（property=ad）</span></td>
+  <td class="sig">property=ad + ad_id + item_id=0-0 + icon_type=4</td>
+  <td>0-0-</td>
+  <td>广告角标</td>
+  <td>广告</td>
+  <td>-</td>
+  <td>239372</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>ajLTZmZBntz5q2</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(30,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d30" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v">ad</span></div><div class="leaf"><span class="k">ad_id</span><span class="v">239372;ajLTZmZBntz5q2sc0Ipt6bFGMNY</span></div><div class="leaf"><span class="k">keyword</span><span class="v">燕云十六声</span></div><div class="leaf"><span class="k">display_word</span><span class="v">燕云十六声</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">4</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">72</span></div><div class="leaf"><span class="k">height</span><span class="v">72</span></div><div class="leaf"><span class="k">color</span><span class="v">0x996036</span></div><div class="leaf"><span class="k">original_size</span><span class="v">3523</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{2}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">trackid</span><span class="v">ajLTZmZBntz5q2sc0Ipt6bFGMNY</span></div><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">239372</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">0-0-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">ajLTZmZBntz5q2sc0Ipt6bFGMNY</span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">239372;ajLTZmZBntz5q2sc0Ipt6bFGMNY</span></div><div class="leaf"><span class="k">icon_title</span><span class="v">广告</span></div></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>11</td>
+  <td style="text-align:left"><b>光·遇</b></td>
+  <td style="text-align:left">光·遇</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>19430-21712-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>62448</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(31,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d31" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">光·遇</span></div><div class="leaf"><span class="k">display_word</span><span class="v">光·遇</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">62448</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">19430-21712-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>12</td>
+  <td style="text-align:left"><b>超自然行动组</b></td>
+  <td style="text-align:left">超自然行动组</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>3227881-3228209-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>714123</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(32,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d32" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">超自然行动组</span></div><div class="leaf"><span class="k">display_word</span><span class="v">超自然行动组</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">714123</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">3227881-3228209-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>13</td>
+  <td style="text-align:left"><b>崩坏：星穹铁道</b></td>
+  <td style="text-align:left">崩坏：星穹铁道</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>22049-209472-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>224267</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(33,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d33" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">崩坏：星穹铁道</span></div><div class="leaf"><span class="k">display_word</span><span class="v">崩坏：星穹铁道</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">224267</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">22049-209472-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-badge">
+  <td>14</td>
+  <td style="text-align:left"><b>王者万象棋</b></td>
+  <td style="text-align:left">王者万象棋</td>
+  <td><span class="pill p-badge">自然（带小角标）</span></td>
+  <td class="sig">—</td>
+  <td>2405178-2405475-</td>
+  <td>小图标角标</td>
+  <td>首发</td>
+  <td>-</td>
+  <td>243110</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(34,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d34" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{8}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">王者万象棋</span></div><div class="leaf"><span class="k">display_word</span><span class="v">王者万象棋</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">2</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">205</span></div><div class="leaf"><span class="k">height</span><span class="v">90</span></div><div class="leaf"><span class="k">color</span><span class="v">0x36747b</span></div><div class="leaf"><span class="k">original_size</span><span class="v">1710</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" target="_blank">https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png</a><br><img src="https://img-tc.tapimg.com/market/images/d7679386ccf628ae2ea26c2fad2008a6.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">243110</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">2405178-2405475-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details><div class="leaf"><span class="k">icon_title</span><span class="v">首发</span></div></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>15</td>
+  <td style="text-align:left"><b>鸣潮</b></td>
+  <td style="text-align:left">鸣潮</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>26581-142951-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>234280</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(35,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d35" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">鸣潮</span></div><div class="leaf"><span class="k">display_word</span><span class="v">鸣潮</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">234280</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">26581-142951-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>16</td>
+  <td style="text-align:left"><b>绝区零</b></td>
+  <td style="text-align:left">绝区零</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>7123-186747-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>234493</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(36,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d36" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">绝区零</span></div><div class="leaf"><span class="k">display_word</span><span class="v">绝区零</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">234493</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">7123-186747-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>17</td>
+  <td style="text-align:left"><b>心动小镇</b></td>
+  <td style="text-align:left">心动小镇</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>4561-151109-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>45213</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(37,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d37" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">心动小镇</span></div><div class="leaf"><span class="k">display_word</span><span class="v">心动小镇</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">45213</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">4561-151109-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>18</td>
+  <td style="text-align:left"><b>塔塔冒险队</b></td>
+  <td style="text-align:left">塔塔冒险队</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>20243638-20125960-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>866257</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(38,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d38" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">塔塔冒险队</span></div><div class="leaf"><span class="k">display_word</span><span class="v">塔塔冒险队</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">866257</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">20243638-20125960-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>19</td>
+  <td style="text-align:left"><b>植物大战僵尸2</b></td>
+  <td style="text-align:left">植物大战僵尸2</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>5947-70888-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>54031</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(39,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d39" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">植物大战僵尸2</span></div><div class="leaf"><span class="k">display_word</span><span class="v">植物大战僵尸2</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">54031</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">5947-70888-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>20</td>
+  <td style="text-align:left"><b>异环</b></td>
+  <td style="text-align:left">异环</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>4262177-4262360-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>趋势角标 type=6</td>
+  <td>714119</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(40,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d40" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{8}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">异环</span></div><div class="leaf"><span class="k">display_word</span><span class="v">异环</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">trend_icon_type</span><span class="v">6</span></div><details open><summary>▸ trend_icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png" target="_blank">https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png</a><br><img src="https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png" target="_blank">https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png</a><br><img src="https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png" target="_blank">https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png</a><br><img src="https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png" target="_blank">https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png</a><br><img src="https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">69</span></div><div class="leaf"><span class="k">height</span><span class="v">30</span></div><div class="leaf"><span class="k">color</span><span class="v">0x993b36</span></div><div class="leaf"><span class="k">original_size</span><span class="v">1239</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png" target="_blank">https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png</a><br><img src="https://img-tc.tapimg.com/market/images/34154fb7c243b093d911f3fb1452e2f5.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">714119</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">4262177-4262360-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>21</td>
+  <td style="text-align:left"><b>香肠派对</b></td>
+  <td style="text-align:left">香肠派对</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>26001-112076-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>58881</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(41,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d41" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{7}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">香肠派对</span></div><div class="leaf"><span class="k">display_word</span><span class="v">香肠派对</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">58881</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">26001-112076-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details><div class="leaf"><span class="k">configuration_kw</span><span class="v">SS27 创造与破坏</span></div></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>22</td>
+  <td style="text-align:left"><b>第五人格</b></td>
+  <td style="text-align:left">第五人格</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>24807-376293-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>49995</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(42,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d42" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">第五人格</span></div><div class="leaf"><span class="k">display_word</span><span class="v">第五人格</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">49995</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24807-376293-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>23</td>
+  <td style="text-align:left"><b>深空之眼</b></td>
+  <td style="text-align:left">深空之眼</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>15463-375963-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>213181</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(43,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d43" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">深空之眼</span></div><div class="leaf"><span class="k">display_word</span><span class="v">深空之眼</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热搜</span></div><div class="leaf"><span class="k">app_id</span><span class="v">213181</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热搜</span></div><div class="leaf"><span class="k">item_id</span><span class="v">15463-375963-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr></tbody>
+</table></div>
+<h2>热点 <span class="meta">hot · 13 条</span></h2>
+<div class="wrap"><table>
+ <thead><tr>
+  <th>#</th><th>关键词</th><th>展示词</th><th>内容性质</th><th>付费线索</th><th>item_id</th>
+  <th>角标</th><th>角标文字</th><th>趋势角标</th>
+  <th>app_id</th><th>plan_id</th><th>flow_cpm</th><th>pctr</th><th>track_id</th><th>图标</th><th>原始</th>
+ </tr></thead><tbody>
+<tr class="p-ok">
+  <td>1</td>
+  <td style="text-align:left"><b>伊莫PC端首发</b></td>
+  <td style="text-align:left">伊莫PC端首发</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>24454400-24333010-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>748031</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(44,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d44" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">伊莫PC端首发</span></div><div class="leaf"><span class="k">display_word</span><span class="v">伊莫PC端首发</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">748031</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24454400-24333010-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ad">
+  <td>2</td>
+  <td style="text-align:left"><b>阴阳师</b></td>
+  <td style="text-align:left">阴阳师</td>
+  <td><span class="pill p-ad">广告（property=ad）</span></td>
+  <td class="sig">property=ad + ad_id + item_id=0-0 + icon_type=4</td>
+  <td>0-0-</td>
+  <td>广告角标</td>
+  <td>广告</td>
+  <td>-</td>
+  <td>12492</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>4DxHFkDSWpKg1v</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(45,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d45" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v">ad</span></div><div class="leaf"><span class="k">ad_id</span><span class="v">12492;4DxHFkDSWpKg1vsVW-sWb4-LIjZ</span></div><div class="leaf"><span class="k">keyword</span><span class="v">阴阳师</span></div><div class="leaf"><span class="k">display_word</span><span class="v">阴阳师</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">4</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">72</span></div><div class="leaf"><span class="k">height</span><span class="v">72</span></div><div class="leaf"><span class="k">color</span><span class="v">0x996036</span></div><div class="leaf"><span class="k">original_size</span><span class="v">3523</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{2}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">trackid</span><span class="v">4DxHFkDSWpKg1vsVW-sWb4-LIjZ</span></div><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">12492</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">0-0-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">4DxHFkDSWpKg1vsVW-sWb4-LIjZ</span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">12492;4DxHFkDSWpKg1vsVW-sWb4-LIjZ</span></div><div class="leaf"><span class="k">icon_title</span><span class="v">广告</span></div></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>3</td>
+  <td style="text-align:left"><b>世界之外前制作人新商标曝光</b></td>
+  <td style="text-align:left">世界之外前制作人新商标曝光</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>24440352-24319209-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>364144</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(46,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d46" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">世界之外前制作人新商标曝光</span></div><div class="leaf"><span class="k">display_word</span><span class="v">世界之外前制作人新商标曝光</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">364144</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24440352-24319209-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>4</td>
+  <td style="text-align:left"><b>未眠野正式首曝</b></td>
+  <td style="text-align:left">未眠野正式首曝</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>24329192-24207758-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>894924</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(47,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d47" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">未眠野正式首曝</span></div><div class="leaf"><span class="k">display_word</span><span class="v">未眠野正式首曝</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">894924</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24329192-24207758-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ad">
+  <td>5</td>
+  <td style="text-align:left"><b>鸣潮</b></td>
+  <td style="text-align:left">鸣潮</td>
+  <td><span class="pill p-ad">广告（property=ad）</span></td>
+  <td class="sig">property=ad + ad_id + item_id=0-0 + icon_type=4</td>
+  <td>0-0-</td>
+  <td>广告角标</td>
+  <td>广告</td>
+  <td>-</td>
+  <td>234280</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>2bpmrMAC1f03fM</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(48,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d48" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v">ad</span></div><div class="leaf"><span class="k">ad_id</span><span class="v">234280;2bpmrMAC1f03fM_r5Z_d57oOwZ-</span></div><div class="leaf"><span class="k">keyword</span><span class="v">鸣潮</span></div><div class="leaf"><span class="k">display_word</span><span class="v">鸣潮</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">4</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">72</span></div><div class="leaf"><span class="k">height</span><span class="v">72</span></div><div class="leaf"><span class="k">color</span><span class="v">0x996036</span></div><div class="leaf"><span class="k">original_size</span><span class="v">3523</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{2}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">trackid</span><span class="v">2bpmrMAC1f03fM_r5Z_d57oOwZ-</span></div><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">234280</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">0-0-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">2bpmrMAC1f03fM_r5Z_d57oOwZ-</span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">234280;2bpmrMAC1f03fM_r5Z_d57oOwZ-</span></div><div class="leaf"><span class="k">icon_title</span><span class="v">广告</span></div></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>6</td>
+  <td style="text-align:left"><b>无限大万象券公开</b></td>
+  <td style="text-align:left">无限大万象券公开</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>24435403-24314021-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>383874</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(49,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d49" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">无限大万象券公开</span></div><div class="leaf"><span class="k">display_word</span><span class="v">无限大万象券公开</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">383874</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24435403-24314021-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>7</td>
+  <td style="text-align:left"><b>战双将联动约战V</b></td>
+  <td style="text-align:left">战双将联动约战V</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>24360362-24240027-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>130651</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(50,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d50" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">战双将联动约战V</span></div><div class="leaf"><span class="k">display_word</span><span class="v">战双将联动约战V</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">130651</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24360362-24240027-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>8</td>
+  <td style="text-align:left"><b>原神六周年送限定自选五星</b></td>
+  <td style="text-align:left">原神六周年送限定自选五星</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>24414892-24293482-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>168332</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(51,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d51" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">原神六周年送限定自选五星</span></div><div class="leaf"><span class="k">display_word</span><span class="v">原神六周年送限定自选五星</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">168332</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24414892-24293482-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ops">
+  <td>9</td>
+  <td style="text-align:left"><b>PVZ2官号认领1437老梗</b></td>
+  <td style="text-align:left">PVZ2官号认领1437老梗</td>
+  <td><span class="pill p-ops">平台运营内容（app_id=0，无竞价线索）</span></td>
+  <td class="sig">—</td>
+  <td>24435393-24314019-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>0</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(52,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d52" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">PVZ2官号认领1437老梗</span></div><div class="leaf"><span class="k">display_word</span><span class="v">PVZ2官号认领1437老梗</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">0</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24435393-24314019-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ad">
+  <td>10</td>
+  <td style="text-align:left"><b>龙之谷：启程</b></td>
+  <td style="text-align:left">龙之谷：启程</td>
+  <td><span class="pill p-ad">广告（property=ad）</span></td>
+  <td class="sig">property=ad + ad_id + item_id=0-0 + icon_type=4</td>
+  <td>0-0-</td>
+  <td>广告角标</td>
+  <td>广告</td>
+  <td>-</td>
+  <td>858841</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>iG85VNPtUxatha</td>
+  <td><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:26px"></td>
+  <td><button class="btn" onclick="tg(53,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d53" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v">ad</span></div><div class="leaf"><span class="k">ad_id</span><span class="v">858841;iG85VNPtUxatha7AcVQcsbZEW0q</span></div><div class="leaf"><span class="k">keyword</span><span class="v">龙之谷：启程</span></div><div class="leaf"><span class="k">display_word</span><span class="v">龙之谷：启程</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">4</span></div><details open><summary>▸ icon <span class="cnt">{10}</span></summary><div class="indent"><div class="leaf"><span class="k">url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">medium_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">small_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div><div class="leaf"><span class="k">original_format</span><span class="v">png</span></div><div class="leaf"><span class="k">width</span><span class="v">72</span></div><div class="leaf"><span class="k">height</span><span class="v">72</span></div><div class="leaf"><span class="k">color</span><span class="v">0x996036</span></div><div class="leaf"><span class="k">original_size</span><span class="v">3523</span></div><div class="leaf"><span class="k">large_url</span><span class="v"><a href="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" target="_blank">https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png</a><br><img src="https://img-tc.tapimg.com/market/images/3034b9376418e6f651083aca2c4f5117.png" style="max-height:64px;border-radius:8px;margin-top:4px"></span></div></div></details><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{2}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">trackid</span><span class="v">iG85VNPtUxatha7AcVQcsbZEW0q</span></div><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">858841</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">0-0-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">iG85VNPtUxatha7AcVQcsbZEW0q</span></div></div></details><div class="leaf"><span class="k">track_id</span><span class="v">858841;iG85VNPtUxatha7AcVQcsbZEW0q</span></div><div class="leaf"><span class="k">icon_title</span><span class="v">广告</span></div></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>11</td>
+  <td style="text-align:left"><b>鬼谷八荒2体量很大</b></td>
+  <td style="text-align:left">鬼谷八荒2体量很大</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>24414868-24293485-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>700558</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(54,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d54" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">鬼谷八荒2体量很大</span></div><div class="leaf"><span class="k">display_word</span><span class="v">鬼谷八荒2体量很大</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">700558</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24414868-24293485-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>12</td>
+  <td style="text-align:left"><b>魔兽世界无限官宣</b></td>
+  <td style="text-align:left">魔兽世界无限官宣</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>24414878-24293486-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>636618</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(55,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d55" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">魔兽世界无限官宣</span></div><div class="leaf"><span class="k">display_word</span><span class="v">魔兽世界无限官宣</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">636618</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24414878-24293486-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr>
+<tr class="p-ok">
+  <td>13</td>
+  <td style="text-align:left"><b>王者万象棋公测体验</b></td>
+  <td style="text-align:left">王者万象棋公测体验</td>
+  <td><span class="pill p-ok">自然</span></td>
+  <td class="sig">—</td>
+  <td>24376420-24268618-</td>
+  <td>无角标</td>
+  <td>-</td>
+  <td>-</td>
+  <td>243110</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td>-</td>
+  <td><button class="btn" onclick="tg(56,this)">字段 ▾</button></td>
+</tr>
+<tr class="drow" id="d56" style="display:none">
+  <td colspan="16"><div class="tree"><details open><summary>▸ item <span class="cnt">{6}</span></summary><div class="indent"><div class="leaf"><span class="k">property</span><span class="v"></span></div><div class="leaf"><span class="k">keyword</span><span class="v">王者万象棋公测体验</span></div><div class="leaf"><span class="k">display_word</span><span class="v">王者万象棋公测体验</span></div><div class="leaf"><span class="k">icon_type</span><span class="v">0</span></div><div class="leaf"><span class="k">referer_ext</span><span class="v"></span></div><details open><summary>▸ event_log <span class="cnt">{1}</span></summary><div class="indent"><details open><summary>▸ via（埋点链路，已拆键值）</summary><div class="indent"><div class="leaf"><span class="k">service</span><span class="v">search_guide_engine</span></div><div class="leaf"><span class="k">scenes</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">app_id</span><span class="v">243110</span></div><div class="leaf"><span class="k">session_id</span><span class="v">66f8563c-b37f-4041-8c36-fd02621a6111</span></div><div class="leaf"><span class="k">hot_tab</span><span class="v">热门话题</span></div><div class="leaf"><span class="k">item_id</span><span class="v">24376420-24268618-</span></div><div class="leaf"><span class="k"></span><span class="v"></span></div></div></details></div></details></div></details></div></td>
+</tr></tbody>
+</table></div>
+<script>
+function tg(id, btn){
+  var row = document.getElementById('d' + id);
+  if (!row) return;
+  var open = row.style.display !== 'none';
+  row.style.display = open ? 'none' : '';
+  if (btn) btn.textContent = open ? '字段 ▾' : '字段 ▴';
+}
+</script>
+</body></html>

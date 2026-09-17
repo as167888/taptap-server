@@ -1,0 +1,131 @@
+# 游戏卡字段普查（0915 手动抓包 84 张 app 卡）
+
+- 字段并集: **124** 个叶子路径；单卡携带 47~95 个，中位数 52
+- 广告卡平均 54 字段，自然卡平均 68 字段（自然卡更多，因为视频/榜单标签/编辑推荐大卡都在自然侧）
+
+| 出现率 | 字段路径 | 类型 | 示例 |
+|---|---|---|---|
+| 14/84 | `ad_info.contents` | str | 告别 Q 版西游，沉浸式写实神魔国风卡牌 |
+| 14/84 | `ad_info.material_id` | int | 972273 |
+| 84/84 | `app.can_view` | bool | True |
+| 84/84 | `app.description.text` | str | 点烛吹灯惊鬼冤，八字不硬莫敢前。千载迷局谁人破？机变无形在此间。<br/>细思极恐的盗墓.. |
+| 84/84 | `app.event_log.paramId` | int | 38128 |
+| 84/84 | `app.event_log.paramType` | str | appDetail |
+| 84/84 | `app.event_log.via` | str | rec/service=index_recommend;request_id=fdad2d3 |
+| 84/84 | `app.flag` | int | 2 |
+| 3/84 | `app.hints[]` | str | 09月24日 新版本更新 |
+| 84/84 | `app.icon.color` | str | 0x794c2a |
+| 84/84 | `app.icon.height` | int | 270 |
+| 84/84 | `app.icon.large_url` | str | https://img-tc.tapimg.com/market/images/299ec1 |
+| 84/84 | `app.icon.medium_url` | str | https://img-tc.tapimg.com/market/images/299ec1 |
+| 84/84 | `app.icon.original_format` | str | png |
+| 84/84 | `app.icon.original_size` | int | 410598 |
+| 84/84 | `app.icon.original_url` | str | https://img-tc.tapimg.com/market/images/299ec1 |
+| 84/84 | `app.icon.small_url` | str | https://img-tc.tapimg.com/market/images/299ec1 |
+| 84/84 | `app.icon.url` | str | https://img-tc.tapimg.com/market/images/299ec1 |
+| 84/84 | `app.icon.width` | int | 270 |
+| 84/84 | `app.id` | int | 38128 |
+| 83/84 | `app.identifier` | str | com.beipai.csj.daomu |
+| 84/84 | `app.is_exclusive` | bool | False |
+| 84/84 | `app.is_level` | bool | False |
+| 33/84 | `app.itunes_id` | str | 6771697396 |
+| 1/84 | `app.level_info.distribution_type` | int | 2 |
+| 1/84 | `app.level_info.level_tag` | str | 创意工坊 |
+| 84/84 | `app.level_rating_enabled` | bool | False |
+| 17/84 | `app.open_time` | int | 1787882400 |
+| 69/84 | `app.rec_text` | str | 原汁原味盗墓游戏 |
+| 83/84 | `app.score` | str | 9.5 |
+| 84/84 | `app.supported_platforms[].key` | str | mobile |
+| 1/84 | `app.tags[]` | 空列表 | [] |
+| 83/84 | `app.tags[].id` | int | 68424 |
+| 83/84 | `app.tags[].uri` | str | taptap://taptap.com/library?tag=%E5%8D%95%E6%9 |
+| 83/84 | `app.tags[].value` | str | 单机 |
+| 83/84 | `app.tags[].web_url` | str | /tag/%E5%8D%95%E6%9C%BA |
+| 84/84 | `app.title` | str | 盗墓长生印 |
+| 24/84 | `app.title_labels_v2[]` | 空列表 | [] |
+| 1/84 | `app.title_labels_v2[].icon.color` | str | 0xffffff |
+| 1/84 | `app.title_labels_v2[].icon.large_url` | str | https://img-tc.tapimg.com/market/images/3da9a6 |
+| 1/84 | `app.title_labels_v2[].icon.medium_url` | str | https://img-tc.tapimg.com/market/images/3da9a6 |
+| 1/84 | `app.title_labels_v2[].icon.original_url` | str | https://img-tc.tapimg.com/market/images/3da9a6 |
+| 1/84 | `app.title_labels_v2[].icon.small_url` | str | https://img-tc.tapimg.com/market/images/3da9a6 |
+| 1/84 | `app.title_labels_v2[].icon.url` | str | https://img-tc.tapimg.com/market/images/3da9a6 |
+| 60/84 | `app.title_labels_v2[].label` | str | 测试 |
+| 84/84 | `app.uri.apple` | str |  |
+| 84/84 | `app.uri.download_site` | str |  |
+| 84/84 | `app.uri.google` | str |  |
+| 84/84 | `app.uri.google_play` | str |  |
+| 84/84 | `banner.color` | str | 0x6b7373 |
+| 84/84 | `banner.height` | int | 1080 |
+| 84/84 | `banner.large_url` | str | https://img-tc.tapimg.com/market/images/3446d4 |
+| 84/84 | `banner.medium_url` | str | https://img-tc.tapimg.com/market/images/3446d4 |
+| 84/84 | `banner.original_format` | str | jpeg |
+| 84/84 | `banner.original_size` | int | 663776 |
+| 84/84 | `banner.original_url` | str | https://img-tc.tapimg.com/market/images/3446d4 |
+| 84/84 | `banner.small_url` | str | https://img-tc.tapimg.com/market/images/3446d4 |
+| 84/84 | `banner.url` | str | https://img-tc.tapimg.com/market/images/3446d4 |
+| 84/84 | `banner.width` | int | 1920 |
+| 1/84 | `editor_rec_info.background_color` | str | 0x57B7C4 |
+| 1/84 | `editor_rec_info.banner.color` | str | 0x6c7373 |
+| 1/84 | `editor_rec_info.banner.height` | int | 1280 |
+| 1/84 | `editor_rec_info.banner.large_url` | str | https://img-tc.tapimg.com/market/images/6cfb74 |
+| 1/84 | `editor_rec_info.banner.medium_url` | str | https://img-tc.tapimg.com/market/images/6cfb74 |
+| 1/84 | `editor_rec_info.banner.original_format` | str | png |
+| 1/84 | `editor_rec_info.banner.original_size` | int | 3167769 |
+| 1/84 | `editor_rec_info.banner.original_url` | str | https://img-tc.tapimg.com/market/images/6cfb74 |
+| 1/84 | `editor_rec_info.banner.small_url` | str | https://img-tc.tapimg.com/market/images/6cfb74 |
+| 1/84 | `editor_rec_info.banner.url` | str | https://img-tc.tapimg.com/market/images/6cfb74 |
+| 1/84 | `editor_rec_info.banner.width` | int | 1926 |
+| 1/84 | `editor_rec_info.rec_text` | str | 点烛吹灯惊鬼冤，八字不硬莫敢前 |
+| 1/84 | `editor_rec_info.stress_color` | str | 0xE2A117 |
+| 1/84 | `editor_rec_info.sub_stress_color` | str | 0xFFEEC1 |
+| 1/84 | `editor_rec_info.type` | str | editor_rec |
+| 84/84 | `identification` | str | app:38128 |
+| 14/84 | `is_ad` | bool | True |
+| 84/84 | `log_extra.isid` | str | 1/rid:fdad2d3f-8a3f-4244-a057-c3a0430dd217_0;t |
+| 78/84 | `rec_info[].icon_type` | str | editors_choice |
+| 78/84 | `rec_info[].label` | str | 编辑推荐 |
+| 78/84 | `rec_info[].style` | str | blue |
+| 78/84 | `rec_info[].type` | str | editors_choice |
+| 84/84 | `type` | str | app |
+| 27/84 | `video.info.aspect_ratio` | float | 1.77778 |
+| 27/84 | `video.info.best_format_name` | str | 1080p |
+| 27/84 | `video.info.duration` | int | 16 |
+| 27/84 | `video.play_log.paramId` | int | 5615372 |
+| 27/84 | `video.play_log.paramType` | str | videoDetail |
+| 27/84 | `video.play_log.subjectId` | int | 788390 |
+| 27/84 | `video.play_log.subjectType` | str | appDetail |
+| 27/84 | `video.play_log.video_id` | int | 5615372 |
+| 27/84 | `video.play_url.url` | str | https://pl.taptap.cn/hls/lhwFcGLYAwOXlgDs4TxYP |
+| 27/84 | `video.play_url.url_expires` | int | 1789500056 |
+| 27/84 | `video.play_url.url_h265` | str | https://pl.taptap.cn/hls/lhwFcGLYAwOXlgDs4TxYP |
+| 27/84 | `video.preview_animation.color` | str | 0xffffff |
+| 27/84 | `video.preview_animation.large_url` | str | https://img-tc.tapimg.com/video-preview/anim-F |
+| 27/84 | `video.preview_animation.medium_url` | str | https://img.tapimg.com/video-preview/anim-FgsJ |
+| 27/84 | `video.preview_animation.original_url` | str | https://img-tc.tapimg.com/video-preview/anim-F |
+| 27/84 | `video.preview_animation.small_url` | str | https://img-tc.tapimg.com/video-preview/anim-F |
+| 27/84 | `video.preview_animation.url` | str | https://img.tapimg.com/video-preview/anim-FtvM |
+| 27/84 | `video.raw_cover.color` | str | 0x676473 |
+| 27/84 | `video.raw_cover.height` | int | 1080 |
+| 27/84 | `video.raw_cover.large_url` | str | https://img-tc.tapimg.com/video-recthumb/tid-6 |
+| 27/84 | `video.raw_cover.medium_url` | str | https://img-tc.tapimg.com/video-recthumb/tid-6 |
+| 27/84 | `video.raw_cover.original_format` | str | png |
+| 27/84 | `video.raw_cover.original_size` | int | 515594 |
+| 27/84 | `video.raw_cover.original_url` | str | https://img-tc.tapimg.com/video-recthumb/tid-6 |
+| 27/84 | `video.raw_cover.small_url` | str | https://img-tc.tapimg.com/video-recthumb/tid-6 |
+| 27/84 | `video.raw_cover.url` | str | https://img-tc.tapimg.com/video-recthumb/tid-6 |
+| 27/84 | `video.raw_cover.width` | int | 1920 |
+| 27/84 | `video.status.can_play` | bool | True |
+| 27/84 | `video.thumbnail.color` | str | 0x5e7368 |
+| 27/84 | `video.thumbnail.height` | int | 1535 |
+| 27/84 | `video.thumbnail.large_url` | str | https://img-tc.tapimg.com/market/images/3d1315 |
+| 27/84 | `video.thumbnail.medium_url` | str | https://img-tc.tapimg.com/market/images/3d1315 |
+| 27/84 | `video.thumbnail.original_format` | str | png |
+| 27/84 | `video.thumbnail.original_size` | int | 2746071 |
+| 27/84 | `video.thumbnail.original_url` | str | https://img-tc.tapimg.com/market/images/3d1315 |
+| 27/84 | `video.thumbnail.small_url` | str | https://img-tc.tapimg.com/market/images/3d1315 |
+| 27/84 | `video.thumbnail.url` | str | https://img-tc.tapimg.com/market/images/3d1315 |
+| 27/84 | `video.thumbnail.width` | int | 2730 |
+| 27/84 | `video.trace_log.subjectId` | int | 788390 |
+| 27/84 | `video.trace_log.subjectType` | str | appDetail |
+| 27/84 | `video.trace_log.video_id` | int | 5615372 |
+| 27/84 | `video.video_id` | int | 5615372 |

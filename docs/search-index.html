@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TapTap搜索广告跟踪</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+ body { font-family:'Microsoft YaHei',sans-serif; background:#f0f2f5; margin:0; padding:30px 16px; }
+ h1 { text-align:center; font-size:24px; color:#1a1a1a; margin:0 0 6px; }
+ .box { background:#fff; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,.06);
+         max-width:1100px; margin:0 auto 16px; padding:16px; }
+ .ttl { font-size:15px; color:#2f3542; margin:4px 0 8px 8px; font-weight:bold; }
+ .desc { font-size:12.5px; color:#7a7a7a; line-height:1.75; margin:0 8px 10px; }
+ .c1 { width:100%; height:330px; }
+ .note { color:#888; font-size:12.5px; max-width:1100px; margin:0 auto; line-height:1.8; }
+</style></head><body>
+<h1>TapTap搜索广告跟踪</h1>
+
+<div class="box">
+ <div class="ttl">① 广告占比指数</div>
+ <div class="desc">每隔一段时间，模拟请求 TapTap 的搜索页（搜索框默认页），把【搜索发现】【热搜】【热点】三个栏目的广告条数相加，除以三个栏目的内容总量，得到广告总占比，并以首期为 1 指数化。</div>
+ <div id="c1" class="c1">图表需联网加载 ECharts</div>
+</div>
+
+<div class="box">
+ <div class="ttl">② 【搜索发现】页面的CPM指数</div>
+ <div id="c2" class="c1">图表需联网加载 ECharts</div>
+</div>
+
+<div class="note">纵轴为指数（首期=1），仅用于比较趋势强弱，不含绝对数值。</div>
+<script>
+const D = {"labels": ["09-16 22:43", "09-16 22:48", "09-16 22:51", "09-16 22:58", "09-16 23:10", "09-17 00:10", "09-17 01:10", "09-17 02:10", "09-17 03:10", "09-17 04:10", "09-17 05:10", "09-17 06:10", "09-17 07:10", "09-17 08:10", "09-17 09:10"]};
+function mk(el, list, colors){
+  if (typeof echarts === 'undefined') {
+    document.getElementById(el).textContent = '⚠ 图表需要联网加载 ECharts。'; return; }
+  const names = list.map(x => x[0]);
+  echarts.init(document.getElementById(el)).setOption({
+    tooltip:{trigger:'axis', formatter:p=>{
+      let s = '<b>' + p[0].axisValue + '</b><br>';
+      p.forEach(x => { if (x.value == null) return;
+        s += x.marker + x.seriesName + '：' + x.value + ' 倍（首期=1）<br>'; });
+      return s;}},
+    legend:{data:names, top:0},
+    grid:{left:84, right:40, bottom:60, top:46, containLabel:true},
+    xAxis:{type:'category', data:D.labels, axisLabel:{fontSize:10.5, rotate:45}},
+    yAxis:{type:'value', name:'指数（首期=1）', nameLocation:'end', nameGap:18,
+      nameTextStyle:{fontSize:12, align:'left', padding:[0,0,0,-8]}},
+    series: list.map((x, i) => ({name:x[0], type:'line', data:x[1], symbolSize:7,
+      smooth:true, connectNulls:true,
+      lineStyle:{width:3, color:colors[i]}, itemStyle:{color:colors[i]}}))
+  });
+}
+mk('c1', [["总广告占比", [1.0, 1.091, 1.091, 1.091, 1.091, 0.909, 1.0, 1.0, 1.0, 1.0, 1.0, 0.818, 0.818, 0.818, 0.818]]], ['#00a8ff','#e67e22','#9b59b6']);
+mk('c2', [["搜索发现CPM", [1.0, 0.95, 0.95, 0.95, 0.798, 11.031, 1.433, 2.063, 1.353, 1.171, 1.505, 1.664, 2.14, 2.05, 2.009]]], ['#e74c3c']);
+</script></body></html>
